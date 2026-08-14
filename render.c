@@ -1,18 +1,18 @@
 #include "render.h"
 
-int init_render(RenderCtx *ctx) {
+bool init_render(RenderCtx *ctx) {
     SDL_Init(SDL_INIT_EVERYTHING);
     SDL_Window *win = SDL_CreateWindow("CHIP-8", SDL_WINDOWPOS_CENTERED,
                                        SDL_WINDOWPOS_CENTERED, DISPLAY_WIDTH,
                                        DISPLAY_HEIGHT, SDL_WINDOW_SHOWN);
     if (!win)
-        return 0;
+        return false;
 
     SDL_Surface *winSurface = SDL_GetWindowSurface(win);
 
     ctx->win = win;
     ctx->winSurface = winSurface;
-    ctx->running = 1;
+    ctx->running = true;
 
     Uint32 black = SDL_MapRGB(ctx->winSurface->format, 0, 0, 0);
     Uint32 gray = SDL_MapRGB(ctx->winSurface->format, 90, 90, 90);
@@ -25,7 +25,7 @@ int init_render(RenderCtx *ctx) {
     ctx->colors[WHITE] = white;
     ctx->colors[GRAY] = gray;
 
-    return 1;
+    return true;
 }
 
 void draw(RenderCtx *ctx, uint8_t *display) {
@@ -35,23 +35,23 @@ void draw(RenderCtx *ctx, uint8_t *display) {
                           CELL_SIZE - BORDER_THICKNESS,
                           CELL_SIZE - BORDER_THICKNESS};
             SDL_FillRect(ctx->winSurface, &r,
-                         (display[y * COLS + x] == 1) ? ctx->colors[WHITE]
-                                                      : ctx->colors[BLACK]);
+                         (display[y * COLS + x] == true) ? ctx->colors[WHITE]
+                                                         : ctx->colors[BLACK]);
         }
     }
     SDL_UpdateWindowSurface(ctx->win);
 }
 
 void poll_events(RenderCtx *ctx) {
-    while (SDL_PollEvent(&ctx->ev) != 0) {
+    while (SDL_PollEvent(&ctx->ev) != false) {
         switch (ctx->ev.type) {
         case SDL_QUIT:
-            ctx->running = 0;
+            ctx->running = false;
             break;
         case SDL_KEYDOWN:
             switch (ctx->ev.key.keysym.sym) {
             case SDLK_ESCAPE:
-                ctx->running = 0;
+                ctx->running = false;
                 break;
             }
         }

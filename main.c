@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 typedef struct {
-    unsigned char mem[4096];
+    bool mem[4096];
     uint8_t V[16];
     uint8_t stack[12];
     uint8_t timer[2];
