@@ -1,26 +1,23 @@
+#include "globals.h"
 #include "render.h"
-#include "types.h"
 
-#define OP(n) void OP_##n(State *state)
-#define FONT_START_ADDRESS 0x50
+#define OPCODE(n) void OPCODE_##n(State *state)
 
-uint8_t generate_random_number() { return rand() % 256; }
-
-OP(00E0) { CLEAR_DISPLAY(state); }
-OP(00EE) {
+OPCODE(00E0) { CLEAR_DISPLAY(state); }
+OPCODE(00EE) {
     --state->sp;
     state->pc = state->stack[state->sp];
 }
-OP(1NNN) {
+OPCODE(1NNN) {
     uint16_t address = state->opcode & 0x0FFF;
     state->pc = address;
 }
-OP(2NNN) {
+OPCODE(2NNN) {
     uint16_t address = state->opcode & 0x0FFF;
     state->stack[state->sp++] = state->pc;
     state->pc = address;
 }
-OP(3XNN) {
+OPCODE(3XNN) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t byte = state->opcode & 0x00FF;
 
@@ -28,7 +25,7 @@ OP(3XNN) {
         state->pc += 2;
     }
 }
-OP(4XNN) {
+OPCODE(4XNN) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t byte = state->opcode & 0x00FF;
 
@@ -36,7 +33,7 @@ OP(4XNN) {
         state->pc += 2;
     }
 }
-OP(5XY0) {
+OPCODE(5XY0) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t y = (state->opcode & 0x00F0) >> 4;
 
@@ -44,37 +41,37 @@ OP(5XY0) {
         state->pc += 2;
     }
 }
-OP(6XNN) {
+OPCODE(6XNN) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t byte = state->opcode & 0x00FF;
 
     state->V[x] = byte;
 }
-OP(7XNN) {
+OPCODE(7XNN) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t byte = state->opcode & 0x00FF;
 
     state->V[x] += byte;
 }
-OP(8XY1) {
+OPCODE(8XY1) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t y = (state->opcode & 0x00F0) >> 4;
 
     state->V[x] |= state->V[y];
 }
-OP(8XY2) {
+OPCODE(8XY2) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t y = (state->opcode & 0x00F0) >> 4;
 
     state->V[x] &= state->V[y];
 }
-OP(8XY3) {
+OPCODE(8XY3) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t y = (state->opcode & 0x00F0) >> 4;
 
     state->V[x] ^= state->V[y];
 }
-OP(8XY4) {
+OPCODE(8XY4) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t y = (state->opcode & 0x00F0) >> 4;
 
@@ -86,7 +83,7 @@ OP(8XY4) {
     }
     state->V[x] = sum & 0xFF;
 }
-OP(8XY5) {
+OPCODE(8XY5) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t y = (state->opcode & 0x00F0) >> 4;
 
@@ -97,12 +94,12 @@ OP(8XY5) {
     }
     state->V[x] -= state->V[y];
 }
-OP(8XY6) {
+OPCODE(8XY6) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     state->V[0xF] = x & 0x1;
     state->V[x] >>= 1;
 }
-OP(8XY7) {
+OPCODE(8XY7) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t y = (state->opcode & 0x00F0) >> 4;
 
@@ -114,12 +111,12 @@ OP(8XY7) {
 
     state->V[x] = state->V[y] - state->V[x];
 }
-OP(8XYE) {
+OPCODE(8XYE) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     state->V[0xF] = (state->V[x] & 0x80) >> 7;
     state->V[x] <<= 1;
 }
-OP(9XY0) {
+OPCODE(9XY0) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t y = (state->opcode & 0x00F0) >> 4;
 
@@ -127,20 +124,20 @@ OP(9XY0) {
         state->pc += 2;
     }
 }
-OP(ANNN) {
+OPCODE(ANNN) {
     uint16_t address = state->opcode & 0x0FFF;
     state->I = address;
 }
-OP(BNNN) {
+OPCODE(BNNN) {
     uint16_t address = state->opcode & 0x0FFF;
     state->pc = state->V[0] + address;
 }
-OP(CXNN) {
+OPCODE(CXNN) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t byte = state->opcode & 0x00FF;
-    state->V[x] = generate_random_number() & byte;
+    state->V[x] = (rand() % 256) & byte;
 }
-OP(DXYN) {
+OPCODE(DXYN) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t y = (state->opcode & 0x00F0) >> 4;
     uint8_t height = state->opcode & 0x000F;
@@ -170,7 +167,7 @@ OP(DXYN) {
         }
     }
 }
-OP(EX9E) {
+OPCODE(EX9E) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t key = state->V[x];
 
@@ -178,7 +175,7 @@ OP(EX9E) {
         state->pc += 2;
     }
 }
-OP(EXA1) {
+OPCODE(EXA1) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     uint8_t key = state->V[x];
 
@@ -186,11 +183,11 @@ OP(EXA1) {
         state->pc += 2;
     }
 }
-OP(FX07) {
+OPCODE(FX07) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     state->V[x] = state->delay_timer;
 }
-OP(FX0A) {
+OPCODE(FX0A) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     bool found = false;
 
@@ -205,23 +202,23 @@ OP(FX0A) {
     if (!found)
         state->pc -= 2;
 }
-OP(FX15) {
+OPCODE(FX15) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     state->delay_timer = state->V[x];
 }
-OP(FX18) {
+OPCODE(FX18) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     state->sound_timer = state->V[x];
 }
-OP(FX1E) {
+OPCODE(FX1E) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     state->I += state->V[x];
 }
-OP(FX29) {
+OPCODE(FX29) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     state->I = FONT_START_ADDRESS + (5 * state->V[x]);
 }
-OP(FX33) {
+OPCODE(FX33) {
     uint8_t x = (state->opcode & 0x0F00u) >> 8u;
     uint8_t value = state->V[x];
 
@@ -236,13 +233,13 @@ OP(FX33) {
     // Hundreds-place
     state->mem[state->I] = value % 10;
 }
-OP(FX55) {
+OPCODE(FX55) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     for (int i = 0; i <= x; ++i) {
         state->mem[state->I + i] = state->V[i];
     }
 }
-OP(FX65) {
+OPCODE(FX65) {
     uint8_t x = (state->opcode & 0x0F00) >> 8;
     for (int i = 0; i <= x; ++i) {
         state->V[i] = state->mem[state->I + i];

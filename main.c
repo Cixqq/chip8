@@ -1,16 +1,12 @@
+#include "globals.h"
 #include "opcode.c"
 #include "render.h"
-#include "types.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-#define ROM_START_ADDRESS 0x200
-#define FONT_START_ADDRESS 0x50
-#define FONTSET_SIZE 80
-
-#define OPCODE(n) OP_##n(state)
+#define CALL_OPCODE(n) OPCODE_##n(state)
 
 bool load_rom(State *state, const char *path) {
     FILE *fp = fopen(path, "rb");
@@ -63,119 +59,124 @@ void decode_and_execute(State *state) {
     case 0x0000:
         switch (state->opcode & 0x000F) {
         case 0x0000:
-            OPCODE(00E0);
+            CALL_OPCODE(00E0);
             break;
         case 0x000E:
-            OPCODE(00EE);
+            CALL_OPCODE(00EE);
             break;
         }
         break;
     case 0x1000:
-        OPCODE(1NNN);
+        CALL_OPCODE(1NNN);
         break;
     case 0x2000:
-        OPCODE(2NNN);
+        CALL_OPCODE(2NNN);
         break;
     case 0x3000:
-        OPCODE(3XNN);
+        CALL_OPCODE(3XNN);
         break;
     case 0x4000:
-        OPCODE(4XNN);
+        CALL_OPCODE(4XNN);
         break;
     case 0x5000:
-        OPCODE(5XY0);
+        CALL_OPCODE(5XY0);
         break;
     case 0x6000:
-        OPCODE(6XNN);
+        CALL_OPCODE(6XNN);
         break;
     case 0x7000:
-        OPCODE(7XNN);
+        CALL_OPCODE(7XNN);
         break;
     case 0x8000:
         switch (state->opcode & 0x000F) {
         case 0x0001:
-            OPCODE(8XY1);
+            CALL_OPCODE(8XY1);
             break;
         case 0x0002:
-            OPCODE(8XY2);
+            CALL_OPCODE(8XY2);
             break;
         case 0x0003:
-            OPCODE(8XY3);
+            CALL_OPCODE(8XY3);
             break;
         case 0x0004:
-            OPCODE(8XY4);
+            CALL_OPCODE(8XY4);
             break;
         case 0x0005:
-            OPCODE(8XY5);
+            CALL_OPCODE(8XY5);
             break;
         case 0x0006:
-            OPCODE(8XY6);
+            CALL_OPCODE(8XY6);
             break;
         case 0x0007:
-            OPCODE(8XY7);
+            CALL_OPCODE(8XY7);
             break;
         case 0x000E:
-            OPCODE(8XYE);
+            CALL_OPCODE(8XYE);
             break;
         }
         break;
     case 0x9000:
-        OPCODE(9XY0);
+        CALL_OPCODE(9XY0);
         break;
 
     case 0xA000:
-        OPCODE(ANNN);
+        CALL_OPCODE(ANNN);
         break;
     case 0xB000:
-        OPCODE(BNNN);
+        CALL_OPCODE(BNNN);
         break;
     case 0xC000:
-        OPCODE(CXNN);
+        CALL_OPCODE(CXNN);
         break;
     case 0xD000:
-        OPCODE(DXYN);
+        CALL_OPCODE(DXYN);
         break;
     case 0xE000:
         switch (state->opcode & 0x000F) {
         case 0x000E:
-            OPCODE(EX9E);
+            CALL_OPCODE(EX9E);
             break;
         case 0x0001:
-            OPCODE(EXA1);
+            CALL_OPCODE(EXA1);
             break;
         }
         break;
     case 0xF000:
         switch (state->opcode & 0x00FF) {
         case 0x0007:
-            OPCODE(FX07);
+            CALL_OPCODE(FX07);
             break;
         case 0x000A:
-            OPCODE(FX0A);
+            CALL_OPCODE(FX0A);
             break;
         case 0x0015:
-            OPCODE(FX15);
+            CALL_OPCODE(FX15);
             break;
         case 0x0018:
-            OPCODE(FX18);
+            CALL_OPCODE(FX18);
             break;
         case 0x001E:
-            OPCODE(FX1E);
+            CALL_OPCODE(FX1E);
             break;
         case 0x0029:
-            OPCODE(FX29);
+            CALL_OPCODE(FX29);
             break;
         case 0x0033:
-            OPCODE(FX33);
+            CALL_OPCODE(FX33);
             break;
         case 0x0055:
-            OPCODE(FX55);
+            CALL_OPCODE(FX55);
             break;
         case 0x0065:
-            OPCODE(FX65);
+            CALL_OPCODE(FX65);
             break;
         }
     }
+}
+
+void cpu_cycle(State *state) {
+    fetch(state);
+    decode_and_execute(state);
 }
 
 int main(int argc, char **argv) {
@@ -200,11 +201,9 @@ int main(int argc, char **argv) {
         return 1;
 
     while (ctx.running) {
-        fetch(&state);
-        decode_and_execute(&state);
-
+        cpu_cycle(&state);
         draw(&ctx, state.display);
-        poll_events(&ctx);
+        poll_events(&state, &ctx);
         WAIT(16);
     }
 

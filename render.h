@@ -1,16 +1,8 @@
 #ifndef _RENDER_H
 #define _RENDER_H
+#include "globals.h"
 #include <SDL2/SDL.h>
 #include <stdbool.h>
-
-#define COLS 64
-#define ROWS 32
-
-#define CELL_SIZE 8
-#define BORDER_THICKNESS 1
-
-#define DISPLAY_WIDTH COLS *CELL_SIZE
-#define DISPLAY_HEIGHT ROWS *CELL_SIZE
 
 #define WAIT(ms) SDL_Delay(ms)
 
@@ -39,7 +31,7 @@
 
 typedef struct {
     SDL_Window *win;
-    SDL_Surface *winSurface;
+    SDL_Surface *win_surface;
     SDL_Event ev;
     bool running;
     Uint32 colors[3];
@@ -54,5 +46,5 @@ enum Colors {
 bool init_render(RenderCtx *ctx);
 void quit_render(RenderCtx *ctx);
 void draw(RenderCtx *ctx, bool *display);
-void poll_events(RenderCtx *ctx);
+void poll_events(State *state, RenderCtx *ctx);
 #endif // _RENDER_H
