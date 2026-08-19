@@ -165,7 +165,7 @@ OP(DXYN) {
                     state->V[0xF] = 1;
                 }
 
-                state->display[index] ^= 1;
+                DRAW_PIXEL(state, x_pos, y_pos);
             }
         }
     }

@@ -17,7 +17,7 @@
 #define DRAW_PIXEL(s, x, y)                                                    \
     do {                                                                       \
         if ((x) >= 0 && (x) < COLS && (y) >= 0 && (y) < ROWS) {                \
-            (s)->display[(y) * COLS + (x)] = true;                             \
+            (s)->display[(y) * COLS + (x)] ^= 1;                               \
         }                                                                      \
     } while (0)
 
