@@ -1,7 +1,6 @@
 #include "render.h"
 #include <SDL2/SDL_keyboard.h>
 #include <SDL2/SDL_keycode.h>
-#include <stdio.h>
 
 bool init_render(RenderCtx *ctx) {
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -69,7 +68,6 @@ void poll_events(State *state, RenderCtx *ctx) {
 
     for (int i = 0; i < 16; i++) {
         state->keypad[i] = keys[scancodes[i]] ? 1 : 0;
-        printf("%d\n", state->keypad[i]);
     }
 }
 
