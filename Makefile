@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -Wall -lSDL2
+CFLAGS = -Wall -lSDL2 -g
 
 all: run
 

@@ -28,7 +28,7 @@ bool init_render(RenderCtx *ctx) {
     return true;
 }
 
-void draw(RenderCtx *ctx, uint8_t *display) {
+void draw(RenderCtx *ctx, bool *display) {
     for (int y = 0; y < ROWS; ++y) {
         for (int x = 0; x < COLS; ++x) {
             SDL_Rect r = {x * CELL_SIZE, y * CELL_SIZE,
